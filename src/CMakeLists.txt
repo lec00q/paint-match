@@ -24,15 +24,11 @@ INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
 # CREATE LIBRARIES AND EXECUTABLES
 ######################################
 
-# Create the library for reading images
-ADD_LIBRARY (image-reader ImageReader.cpp)
-TARGET_LINK_LIBRARIES (image-reader ${OpenCV_LIBS} ${GLOG_LIBRARIES} ${Boost_LIBRARIES})
+SET (SRCS ImageReader.cpp ImageMatcher.cpp main.cpp)
+ADD_EXECUTABLE (paintMatcher ${SRCS})
+TARGET_LINK_LIBRARIES (paintMatcher ${OpenCV_LIBS} ${GLOG_LIBRARIES} ${Boost_LIBRARIES})
 
-# Create main executable
-ADD_EXECUTABLE (paintMatcher main.cpp)
-TARGET_LINK_LIBRARIES (paintMatcher ${GLOG_LIBRARIES})
-
-INSTALL (TARGETS image-reader paintMatcher
+INSTALL (TARGETS paintMatcher
          RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin
          LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib
          ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib)

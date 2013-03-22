@@ -31,8 +31,8 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 CMAKE_POLICY (SET CMP0015 NEW)
 
 # Build shared lib and set RPATH (Linux only)
-SET(BUILD_SHARED_LIBS ON)
-SET(CMAKE_INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib")
+#SET(BUILD_SHARED_LIBS ON)
+#SET(CMAKE_INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib")
 
 # INCLUDE DIRECTORIES
 # When  including  directories  in  the root  CMakeList,  the  path  are

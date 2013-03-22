@@ -64,6 +64,12 @@ public:
      * @return An image
      */
     cv::Mat LoadNextImage();
+    /**
+     * @brief Load a single image
+     * @param[in] fileName Image file name
+     * @return An image
+     */
+    static cv::Mat LoadImage (const std::string &fileName);
 
 private:
 

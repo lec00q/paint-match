@@ -29,6 +29,26 @@ ImageReader::ImageReader(const std::string &imageDirectory) :
     (*this)(imageDirectory);
 }
 
+cv::Mat
+ImageReader::LoadImage (const std::string &fileName)
+{
+    cv::Mat image;
+    namespace fs = boost::filesystem;
+
+    if (fs::exists(fileName) && fs::is_regular_file(fileName))
+    {
+        image = cv::imread(fileName, CV_LOAD_IMAGE_COLOR);
+        if (!image.data)
+            throw ImageReaderIOException("Canot load image: " + fileName);
+    }
+    else
+    {
+        throw ImageReaderIOException("No such file: " + fileName);
+    }
+
+    return image;
+}
+
 void
 ImageReader::operator() (const std::string &imageDirectory)
 {
@@ -106,12 +126,17 @@ ImageReader::LoadNextImage()
         throw ImageReaderIOException("No more images to be loaded");
     }
 
+    LOG(INFO) << "Loading image " << mFileNames[mLastImageIndex];
+
     cv::Mat image = cv::imread(mFilesPath + mFileNames[mLastImageIndex],
                                CV_LOAD_IMAGE_COLOR);
 
     if (!image.data)
+    {
         LOG(ERROR) << "Could not open image "
         << mFilesPath + mFileNames[mLastImageIndex];
+        throw ImageReaderIOException("Could not open image");
+    }
 
     mLastImageIndex++;
     return image;
