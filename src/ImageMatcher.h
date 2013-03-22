@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 class ImageMatcher
 {
@@ -25,15 +26,22 @@ public:
 
     void AnalyzeDataset(const std::string &imageDirectory);
 
-    void MatchImage(const std::string &fileName);
+    const std::string MatchImage(const std::string &fileName);
+
+    const std::string MatchImageDebug (const std::string &imageDirectory,
+                                       const std::string &fileName);
 
 private:
 
     void ComputeDescriptors(const cv::Mat &image, cv::Mat &desc);
+    void ComputeDescriptors(const cv::Mat &image, cv::Mat &desc,
+                            std::vector<cv::KeyPoint> &keypoints);
 
     ImageReader mImageReader;
 
-    std::vector<cv::Mat> mDescriptorVec;
+    std::vector<std::string> mFileNames;
+
+    cv::FlannBasedMatcher matcher;
 
     int mMinHessian;
 };

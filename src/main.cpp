@@ -32,13 +32,15 @@ main (int argc, char *argv[])
     std::string datasetDir(argv[1]);
     std::string image(argv[2]);
 
-    std::cout << "Analyzing whole dataset..." << std::endl;
+//    matcher.MatchImageDebug (datasetDir, image);
 
+    std::cout << "Analyzing the whole dataset..." << std::endl;
     matcher.AnalyzeDataset(datasetDir);
+    std::cout << "Done!" << std::endl << std::endl;
 
-    std::cout << "Match image " << image;
-
-    matcher.MatchImage(image);
+    std::cout << "Searching best match for image " << image << std::endl;
+    std::string matchName = matcher.MatchImage(image);
+    std::cout << "Best match found: " << matchName << std::endl << std::endl;
 
     return (EXIT_SUCCESS);
 }

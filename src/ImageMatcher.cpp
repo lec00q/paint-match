@@ -10,8 +10,13 @@
 
 #include "ImageMatcher.h"
 
-#include "opencv2/features2d/features2d.hpp"
+#include <stdio.h>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
 #include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include "opencv2/calib3d/calib3d.hpp"
 
 using namespace cv;
 
@@ -33,12 +38,24 @@ ImageMatcher::ComputeDescriptors(const Mat &image, Mat &desc)
 }
 
 void
+ImageMatcher::ComputeDescriptors(const Mat &image, Mat &desc,
+                                 std::vector<KeyPoint> &keypoints)
+{
+    SurfFeatureDetector detector(mMinHessian);
+    detector.detect(image, keypoints);
+
+    SurfDescriptorExtractor extractor;
+    extractor.compute(image, keypoints, desc);
+}
+
+void
 ImageMatcher::AnalyzeDataset(const std::string &imageDirectory)
 {
     bool done = false;
-    mDescriptorVec.clear();
+    matcher.clear();
 
     mImageReader(imageDirectory);
+    mFileNames = mImageReader.GetFileNames();
 
     while (!done)
     {
@@ -48,7 +65,8 @@ ImageMatcher::AnalyzeDataset(const std::string &imageDirectory)
 
             Mat descriptors;
             ComputeDescriptors(image, descriptors);
-            mDescriptorVec.push_back (descriptors);
+
+            matcher.add (descriptors);
         }
         catch (const ImageReaderIOException &ex)
         {
@@ -57,18 +75,132 @@ ImageMatcher::AnalyzeDataset(const std::string &imageDirectory)
     }
 }
 
-void
+bool sortFunc (DMatch i, DMatch j)
+{
+    return (i.distance < j.distance);
+}
+
+const std::string
 ImageMatcher::MatchImage(const std::string &fileName)
 {
-    Mat descriptors;
-    std::vector<cv::DMatch> matches;
+    typedef std::vector<cv::DMatch>::iterator DMatchIt;
+    typedef std::vector<cv::Mat>::iterator descIt;
 
     Mat image = ImageReader::LoadImage(fileName);
 
+    Mat descriptors;
     ComputeDescriptors(image, descriptors);
 
-    cv::FlannBasedMatcher matcher;
-    /// @todo Match with every image
-    matcher.match(descriptors, mDescriptorVec[0], matches);
+    std::vector<cv::DMatch> matches;
+    // Match against every image in the set
+    matcher.match(descriptors, matches);
+
+    /// @todo To find a best match, I should test the homography,
+    /// more than using the distances themselves.
+
+    std::string result;
+//    if (bestMatch == sums.end())
+//    {
+//        result = "no feasible match";
+//    }
+//    else
+//    {
+//        result = mFileNames[bestMatch - sums.begin()];
+//    }
+
+    return result;
 }
+
+const std::string
+ImageMatcher::MatchImageDebug (const std::string &imageDirectory,
+                               const std::string &fileName)
+{
+    bool done = false;
+    typedef std::vector<cv::DMatch>::iterator DMatchIt;
+    typedef std::vector<cv::Mat>::iterator descIt;
+
+    std::vector<cv::Mat> mDescriptorVec;
+    mDescriptorVec.clear();
+
+    mImageReader(imageDirectory);
+    mFileNames = mImageReader.GetFileNames();
+
+    cv::FlannBasedMatcher matcher;
+
+    Mat image = ImageReader::LoadImage(fileName);
+
+    Mat descriptors;
+    std::vector<KeyPoint> keypoints;
+    ComputeDescriptors(image, descriptors, keypoints);
+
+    while (!done)
+    {
+        try
+        {
+            Mat image2 = mImageReader.LoadNextImage();
+
+            Mat descriptors2;
+            std::vector<KeyPoint> keypoints2;
+            ComputeDescriptors(image2, descriptors2, keypoints2);
+
+            std::vector<cv::DMatch> matches;
+            matcher.match(descriptors, descriptors2, matches);
+
+            std::sort (matches.begin(), matches.end(), sortFunc);
+
+            /**************************************************/
+            std::vector<Point2f> obj;
+            std::vector<Point2f> scene;
+            DMatchIt dIt = matches.begin();
+
+            for (; dIt != matches.end(); ++dIt)
+            {
+                obj.push_back (keypoints[dIt->queryIdx].pt);
+                scene.push_back (keypoints2[dIt->trainIdx].pt);
+
+                if ((0.01 + dIt->distance) > 3 * (0.01 + matches[0].distance))
+                    break;
+            }
+
+            std::vector<DMatch> good_matches (matches.begin(), dIt);
+            Mat H = findHomography(obj, scene, CV_RANSAC );
+
+            //-- Draw only "good" matches
+            Mat img_matches;
+            drawMatches(image, keypoints, image2, keypoints2,
+                        good_matches, img_matches, Scalar::all(-1),
+                        Scalar::all(-1), std::vector<char>(),
+                        DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+            //-- Get the corners from the image_1 ( the object to be "detected" )
+            std::vector<Point2f> obj_corners(4);
+            obj_corners[0] = cvPoint(0,0);
+            obj_corners[1] = cvPoint( image.cols, 0 );
+            obj_corners[2] = cvPoint( image.cols, image.rows );
+            obj_corners[3] = cvPoint( 0, image.rows );
+            std::vector<Point2f> scene_corners(4);
+
+            perspectiveTransform( obj_corners, scene_corners, H);
+
+            //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+            line( img_matches, scene_corners[0] + Point2f( image.cols, 0), scene_corners[1] + Point2f( image.cols, 0), Scalar(0, 255, 0), 4 );
+            line( img_matches, scene_corners[1] + Point2f( image.cols, 0), scene_corners[2] + Point2f( image.cols, 0), Scalar( 0, 255, 0), 4 );
+            line( img_matches, scene_corners[2] + Point2f( image.cols, 0), scene_corners[3] + Point2f( image.cols, 0), Scalar( 0, 255, 0), 4 );
+            line( img_matches, scene_corners[3] + Point2f( image.cols, 0), scene_corners[0] + Point2f( image.cols, 0), Scalar( 0, 255, 0), 4 );
+
+            //-- Show detected matches
+            cv::imshow("Good Matches", img_matches);
+
+            cv::waitKey(0);
+        }
+        catch (const ImageReaderIOException &ex)
+        {
+            done = true;
+        }
+    }
+
+    std::string result;
+    return result;
+}
+
 
