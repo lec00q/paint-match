@@ -39,6 +39,8 @@ private:
 
     ImageReader mImageReader;
 
+    cv::FlannBasedMatcher mMatcher;
+
     std::vector<std::string> mFileNames;
     std::vector<cv::Mat> mDescriptorVec;
 

@@ -72,6 +72,10 @@ ImageMatcher::AnalyzeDataset(const std::string &imageDirectory)
             done = true;
         }
     }
+
+    mMatcher.clear();
+    mMatcher.add (mDescriptorVec);
+    mMatcher.train ();
 }
 
 bool sortFunc (DMatch i, DMatch j)
@@ -85,11 +89,6 @@ ImageMatcher::MatchImage(const std::string &fileName)
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     typedef std::vector<cv::Mat>::iterator descIt;
 
-    cv::FlannBasedMatcher matcher;
-    matcher.clear();
-    matcher.add (mDescriptorVec);
-    matcher.train ();
-
     Mat image = ImageReader::LoadImage(fileName);
 
     Mat descriptors;
@@ -97,12 +96,18 @@ ImageMatcher::MatchImage(const std::string &fileName)
 
     std::vector<cv::DMatch> matches;
     // Match against every image in the set
-    matcher.match(descriptors, matches);
+    mMatcher.match(descriptors, matches);
 
     std::string result;
 
     /// @todo warning no match!
     result = mFileNames[matches[0].imgIdx];
+
+    std::sort (matches.begin(), matches.end());
+    for (DMatchIt it = matches.begin(); it != matches.end(); ++it)
+    {
+        std::cout << "idx " << (*it).imgIdx << "\t";
+    }
 
     return result;
 }
@@ -184,6 +189,7 @@ ImageMatcher::MatchImageDebug (const std::string &imageDirectory,
             line( img_matches, scene_corners[3] + Point2f( image.cols, 0), scene_corners[0] + Point2f( image.cols, 0), Scalar( 0, 255, 0), 4 );
 
             //-- Show detected matches
+            cv::namedWindow("Good Matches", CV_WINDOW_KEEPRATIO);
             cv::imshow("Good Matches", img_matches);
 
             cv::waitKey(0);
