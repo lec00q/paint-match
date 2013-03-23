@@ -43,6 +43,8 @@ main (int argc, char *argv[])
     matcher.Train(datasetDir);
     std::cout << "Done!" << std::endl << std::endl;
 
+//    std::string matchName = matcher.FindBestMatch(queryDir + queryNames[4]);
+
     for (std::vector<std::string>::iterator it = queryNames.begin();
             it != queryNames.end(); ++it)
     {

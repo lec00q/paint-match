@@ -117,9 +117,9 @@ ImageMatcher::EstimateHomography(Mat &objDescriptors, Mat &sceneDescriptors,
 
     // Keep good match only (< 3 * min_distance)
     // Clip because the distance can be 0
-    float maxDistance = (low->distance == 0) ? 0.01 : (3 * low->distance);
-    up = std::upper_bound (filteredMatches.begin(), filteredMatches.end(),
-                           maxDistance, CompFunc);
+//    float maxDistance = (low->distance == 0) ? 0.01 : (3 * low->distance);
+//    up = std::upper_bound (filteredMatches.begin(), filteredMatches.end(),
+//                           maxDistance, CompFunc);
 
     std::vector<Point2f> obj;
     std::vector<Point2f> scene;
