@@ -142,3 +142,23 @@ ImageReader::LoadNextImage()
     return image;
 }
 
+cv::Mat
+ImageReader::LoadImage (unsigned int i)
+{
+    if (i >= mFileNames.size())
+        throw ImageReaderIOException("Index exceeds number of images");
+
+    LOG(INFO) << "Loading image " << mFileNames[i];
+
+    cv::Mat image = cv::imread(mFilesPath + mFileNames[i], CV_LOAD_IMAGE_COLOR);
+
+    if (!image.data)
+    {
+        LOG(ERROR) << "Could not open image "
+        << mFilesPath + mFileNames[i];
+        throw ImageReaderIOException("Could not open image");
+    }
+
+    return image;
+}
+

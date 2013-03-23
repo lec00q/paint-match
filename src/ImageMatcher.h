@@ -24,9 +24,9 @@ public:
 
     ImageMatcher(int minHessian = 400);
 
-    void AnalyzeDataset(const std::string &imageDirectory);
+    void Train(const std::string &imageDirectory);
 
-    const std::string MatchImage(const std::string &fileName);
+    const std::string FindBestMatch(const std::string &fileName);
 
     const std::string MatchImageDebug (const std::string &imageDirectory,
                                        const std::string &fileName);
@@ -37,12 +37,18 @@ private:
     void ComputeDescriptors(const cv::Mat &image, cv::Mat &desc,
                             std::vector<cv::KeyPoint> &keypoints);
 
+    cv::Mat
+    EstimateHomography(cv::Mat &objDescriptors, cv::Mat &sceneDescriptors,
+                       std::vector<cv::KeyPoint> &objKeypoints,
+                       std::vector<cv::KeyPoint> &sceneKeypoints);
+
     ImageReader mImageReader;
 
     cv::FlannBasedMatcher mMatcher;
 
     std::vector<std::string> mFileNames;
-    std::vector<cv::Mat> mDescriptorVec;
+    std::vector<cv::Mat> mTrainDescriptors;
+    std::vector<std::vector<cv::KeyPoint> > mTrainKeypoints;
 
     int mMinHessian;
 };

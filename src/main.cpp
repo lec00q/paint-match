@@ -37,17 +37,17 @@ main (int argc, char *argv[])
     std::vector<std::string> queryNames = reader.GetFileNames();
     ImageMatcher matcher;
 
-//    matcher.MatchImageDebug (datasetDir, image);
+//    matcher.MatchImageDebug (datasetDir, queryDir + queryNames[4]);
 
     std::cout << "Analyzing the whole dataset..." << std::endl;
-    matcher.AnalyzeDataset(datasetDir);
+    matcher.Train(datasetDir);
     std::cout << "Done!" << std::endl << std::endl;
 
     for (std::vector<std::string>::iterator it = queryNames.begin();
             it != queryNames.end(); ++it)
     {
         std::cout << "Searching best match for image " << *it << "..." << std::endl;
-        std::string matchName = matcher.MatchImage(queryDir + *it);
+        std::string matchName = matcher.FindBestMatch(queryDir + *it);
         std::cout << "Best match found: " << matchName << std::endl << std::endl;
     }
 

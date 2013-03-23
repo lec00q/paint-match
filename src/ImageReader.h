@@ -70,6 +70,12 @@ public:
      * @return An image
      */
     static cv::Mat LoadImage (const std::string &fileName);
+    /**
+     * @brief Load a single image from the set
+     * @param[in] i Index of the image
+     * @return An image
+     */
+    cv::Mat LoadImage (unsigned int i);
 
 private:
 
