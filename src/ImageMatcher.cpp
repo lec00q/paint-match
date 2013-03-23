@@ -89,25 +89,46 @@ ImageMatcher::MatchImage(const std::string &fileName)
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     typedef std::vector<cv::Mat>::iterator descIt;
 
+    const float minDistance = 100;
+
     Mat image = ImageReader::LoadImage(fileName);
 
-    Mat descriptors;
-    ComputeDescriptors(image, descriptors);
+    Mat queryDesc;
+    ComputeDescriptors(image, queryDesc);
 
     std::vector<cv::DMatch> matches;
     // Match against every image in the set
-    mMatcher.match(descriptors, matches);
+    mMatcher.match(queryDesc, matches);
+
+    // std::sort (matches.begin(), matches.end());
+    std::vector<float> meanDistances(mDescriptorVec.size(), 0);
+    std::vector<float> numMatches(mDescriptorVec.size(), 0);
+
+    for (DMatchIt it = matches.begin(); it != matches.end(); ++it)
+    {
+        numMatches[(*it).imgIdx] ++;
+        meanDistances[(*it).imgIdx] += (*it).distance;
+    }
+
+    for (int i = 0; i < meanDistances.size(); ++i)
+    {
+        if (numMatches[i] > 0)
+            meanDistances[i] = meanDistances[i] / numMatches[i];
+        else
+            meanDistances[i] = minDistance;
+
+        std::cout << "dist " << meanDistances[i];
+    }
+
+    std::vector<float>::iterator min =
+        std::min_element (meanDistances.begin(), meanDistances.end());
 
     std::string result;
 
-    /// @todo warning no match!
-    result = mFileNames[matches[0].imgIdx];
-
-    std::sort (matches.begin(), matches.end());
-    for (DMatchIt it = matches.begin(); it != matches.end(); ++it)
-    {
-        std::cout << "idx " << (*it).imgIdx << "\t";
-    }
+    if (min != meanDistances.end())
+        result = mFileNames[min - meanDistances.begin()];
+    else
+        result = "No match found";
 
     return result;
 }

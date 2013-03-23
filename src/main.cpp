@@ -16,21 +16,26 @@
 #include <opencv2/core/core.hpp>
 
 #include "ImageMatcher.h"
+#include "ImageReader.h"
 
 int
 main (int argc, char *argv[])
 {
     if (argc < 3)
-        /// @todo Print usage
+    {
+        std::cout << "\tUsage: " << argv[0] << " <trainingDir> <queryDir>\n\n";
         return (EXIT_FAILURE);
-
-    ImageMatcher matcher;
+    }
 
     // Initialize Google's logging library.
     google::InitGoogleLogging(argv[0]);
 
     std::string datasetDir(argv[1]);
-    std::string image(argv[2]);
+    std::string queryDir(argv[2]);
+
+    ImageReader reader(queryDir);
+    std::vector<std::string> queryNames = reader.GetFileNames();
+    ImageMatcher matcher;
 
 //    matcher.MatchImageDebug (datasetDir, image);
 
@@ -38,9 +43,14 @@ main (int argc, char *argv[])
     matcher.AnalyzeDataset(datasetDir);
     std::cout << "Done!" << std::endl << std::endl;
 
-    std::cout << "Searching best match for image " << image << std::endl;
-    std::string matchName = matcher.MatchImage(image);
-    std::cout << "Best match found: " << matchName << std::endl << std::endl;
+    for (std::vector<std::string>::iterator it = queryNames.begin();
+            it != queryNames.end(); ++it)
+    {
+        std::cout << "Searching best match for image " << *it << "..." << std::endl;
+        std::string matchName = matcher.MatchImage(queryDir + *it);
+        std::cout << "Best match found: " << matchName << std::endl << std::endl;
+    }
 
     return (EXIT_SUCCESS);
 }
+
