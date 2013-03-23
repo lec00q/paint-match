@@ -40,8 +40,7 @@ private:
     ImageReader mImageReader;
 
     std::vector<std::string> mFileNames;
-
-    cv::FlannBasedMatcher matcher;
+    std::vector<cv::Mat> mDescriptorVec;
 
     int mMinHessian;
 };

@@ -52,7 +52,6 @@ void
 ImageMatcher::AnalyzeDataset(const std::string &imageDirectory)
 {
     bool done = false;
-    matcher.clear();
 
     mImageReader(imageDirectory);
     mFileNames = mImageReader.GetFileNames();
@@ -66,7 +65,7 @@ ImageMatcher::AnalyzeDataset(const std::string &imageDirectory)
             Mat descriptors;
             ComputeDescriptors(image, descriptors);
 
-            matcher.add (descriptors);
+            mDescriptorVec.push_back(descriptors);
         }
         catch (const ImageReaderIOException &ex)
         {
@@ -86,6 +85,11 @@ ImageMatcher::MatchImage(const std::string &fileName)
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     typedef std::vector<cv::Mat>::iterator descIt;
 
+    cv::FlannBasedMatcher matcher;
+    matcher.clear();
+    matcher.add (mDescriptorVec);
+    matcher.train ();
+
     Mat image = ImageReader::LoadImage(fileName);
 
     Mat descriptors;
@@ -95,18 +99,10 @@ ImageMatcher::MatchImage(const std::string &fileName)
     // Match against every image in the set
     matcher.match(descriptors, matches);
 
-    /// @todo To find a best match, I should test the homography,
-    /// more than using the distances themselves.
-
     std::string result;
-//    if (bestMatch == sums.end())
-//    {
-//        result = "no feasible match";
-//    }
-//    else
-//    {
-//        result = mFileNames[bestMatch - sums.begin()];
-//    }
+
+    /// @todo warning no match!
+    result = mFileNames[matches[0].imgIdx];
 
     return result;
 }
@@ -119,7 +115,6 @@ ImageMatcher::MatchImageDebug (const std::string &imageDirectory,
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     typedef std::vector<cv::Mat>::iterator descIt;
 
-    std::vector<cv::Mat> mDescriptorVec;
     mDescriptorVec.clear();
 
     mImageReader(imageDirectory);
