@@ -24,9 +24,19 @@ public:
 
     ImageMatcher(int minHessian = 400);
 
+    /**
+     * @brief Train the classifier by feeding a dataset of images.
+     */
     void Train(const std::string &imageDirectory);
 
+    /**
+     * @brief Find the best match among the images in the dataset.
+     * @note The classifier must be trained.
+     */
     const std::string FindBestMatch(const std::string &fileName);
+
+    const std::string FindBestMatch(const std::string &fileName,
+                                    float &confidence);
 
     const std::string MatchImageDebug (const std::string &imageDirectory,
                                        const std::string &fileName);

@@ -34,6 +34,15 @@ CMAKE_POLICY (SET CMP0015 NEW)
 #SET(BUILD_SHARED_LIBS ON)
 #SET(CMAKE_INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib")
 
+# Configure a header file to pass some of the CMake settings
+# to the source code
+CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/config.h.in"
+               "${PROJECT_BINARY_DIR}/config.h")
+
+# Add the binary tree to the search path for include files
+# so that we will find config.h
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
+
 # INCLUDE DIRECTORIES
 # When  including  directories  in  the root  CMakeList,  the  path  are
 # automatically exported  to all  subdirectories, so we  do not  need to

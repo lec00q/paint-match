@@ -131,7 +131,7 @@ ImageMatcher::HomographyMatching(const Mat &objDescriptors,
 
         // Compute mean distance for inliers only
         int *maskPtr = mask.ptr<int>(0);
-        for(int i = 0; i < obj.size(); i++)
+        for(int i = 0; i < filteredMatches.size(); i++)
         {
             if (maskPtr)
                 meanDistance += filteredMatches[i].distance;
@@ -147,6 +147,14 @@ ImageMatcher::HomographyMatching(const Mat &objDescriptors,
 
 const std::string
 ImageMatcher::FindBestMatch(const std::string &fileName)
+{
+    float c;
+    return (FindBestMatch(fileName, c));
+}
+
+const std::string
+ImageMatcher::FindBestMatch(const std::string &fileName,
+                            float &confidence)
 {
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     typedef std::vector<cv::Mat>::iterator descIt;
@@ -200,8 +208,7 @@ ImageMatcher::FindBestMatch(const std::string &fileName)
     std::vector<float>::iterator second_best =
         std::min_element (distances.begin(), distances.end());
 
-    float diff = real_best - *second_best;
-    std::cout << "Difference " << diff << std::endl;
+    confidence = *second_best - real_best;
 
     return result;
 }

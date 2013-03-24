@@ -1,0 +1,3 @@
+// define relative paths
+#define TRAINING_DIR "@PROJECT_SOURCE_DIR@/training/"
+#define QUERY_DIR "@PROJECT_SOURCE_DIR@/query/"
