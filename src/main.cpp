@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <string.h>
-#include <glog/logging.h>
 #include <opencv2/core/core.hpp>
 
 #include "ImageMatcher.h"
@@ -27,17 +26,12 @@ main (int argc, char *argv[])
         return (EXIT_FAILURE);
     }
 
-    // Initialize Google's logging library.
-    google::InitGoogleLogging(argv[0]);
-
     std::string datasetDir(argv[1]);
     std::string queryDir(argv[2]);
 
     ImageReader reader(queryDir);
     std::vector<std::string> queryNames = reader.GetFileNames();
     ImageMatcher matcher;
-
-//    matcher.MatchImageDebug (datasetDir, queryDir + queryNames[4]);
 
     std::cout << "Analyzing the whole dataset..." << std::endl;
     matcher.Train(datasetDir);

@@ -37,10 +37,11 @@ private:
     void ComputeDescriptors(const cv::Mat &image, cv::Mat &desc,
                             std::vector<cv::KeyPoint> &keypoints);
 
-    cv::Mat
-    EstimateHomography(cv::Mat &objDescriptors, cv::Mat &sceneDescriptors,
-                       std::vector<cv::KeyPoint> &objKeypoints,
-                       std::vector<cv::KeyPoint> &sceneKeypoints);
+    float HomographyMatching(const cv::Mat &objDescriptors,
+                             const cv::Mat &sceneDescriptors,
+                             const std::vector<cv::KeyPoint> &objKeypoints,
+                             const std::vector<cv::KeyPoint> &sceneKeypoints,
+                             cv::Mat &homography);
 
     ImageReader mImageReader;
 
@@ -54,3 +55,4 @@ private:
 };
 
 #endif
+

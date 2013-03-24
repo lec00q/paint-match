@@ -91,13 +91,17 @@ float sumFunc (float val, DMatch d)
     return (val + d.distance);
 }
 
-cv::Mat
-ImageMatcher::EstimateHomography(Mat &objDescriptors, Mat &sceneDescriptors,
-                                 std::vector<KeyPoint> &objKeypoints,
-                                 std::vector<KeyPoint> &sceneKeypoints)
+float
+ImageMatcher::HomographyMatching(const Mat &objDescriptors,
+                                 const Mat &sceneDescriptors,
+                                 const std::vector<KeyPoint> &objKeypoints,
+                                 const std::vector<KeyPoint> &sceneKeypoints,
+                                 Mat &homography)
 {
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     std::vector<DMatch> filteredMatches, matches12, matches21;
+    std::vector<Point2f> obj;
+    std::vector<Point2f> scene;
 
     mMatcher.match(objDescriptors, sceneDescriptors, matches12);
     mMatcher.match(sceneDescriptors, objDescriptors, matches21);
@@ -108,39 +112,37 @@ ImageMatcher::EstimateHomography(Mat &objDescriptors, Mat &sceneDescriptors,
         DMatch forward = matches12[i];
         DMatch backward = matches21[forward.trainIdx];
         if (backward.trainIdx == forward.queryIdx)
+        {
             filteredMatches.push_back(forward);
-    }
-    // Sort matches by distance
-    std::sort (filteredMatches.begin(), filteredMatches.end());
-    DMatchIt low = filteredMatches.begin();
-    DMatchIt up = filteredMatches.end();
-
-    // Keep good match only (< 3 * min_distance)
-    // Clip because the distance can be 0
-//    float maxDistance = (low->distance == 0) ? 0.01 : (3 * low->distance);
-//    up = std::upper_bound (filteredMatches.begin(), filteredMatches.end(),
-//                           maxDistance, CompFunc);
-
-    std::vector<Point2f> obj;
-    std::vector<Point2f> scene;
-    float sum = 0;
-
-    // Map to points
-    for (DMatchIt it = low; it != up; ++it)
-    {
-        obj.push_back (objKeypoints[it->queryIdx].pt);
-        scene.push_back (sceneKeypoints[it->trainIdx].pt);
-        sum += it->distance;
+            obj.push_back (objKeypoints[forward.queryIdx].pt);
+            scene.push_back (sceneKeypoints[forward.trainIdx].pt);
+        }
     }
 
-    Mat homography;
+    float meanDistance = 100;
+
     if (obj.size() >= 4)
     {
+        Mat mask;
+        meanDistance = 0;
+
         // Compute homography and retrieve inliers
-        homography = findHomography (obj, scene, CV_RANSAC);
+        homography = findHomography (obj, scene, CV_RANSAC, 3, mask);
+
+        // Compute mean distance for inliers only
+        int *maskPtr = mask.ptr<int>(0);
+        for(int i = 0; i < obj.size(); i++)
+        {
+            if (maskPtr)
+                meanDistance += filteredMatches[i].distance;
+
+            maskPtr++;
+        }
+
+        meanDistance /= countNonZero(mask);
     }
 
-    return homography;
+    return meanDistance;
 }
 
 const std::string
@@ -149,11 +151,11 @@ ImageMatcher::FindBestMatch(const std::string &fileName)
     typedef std::vector<cv::DMatch>::iterator DMatchIt;
     typedef std::vector<cv::Mat>::iterator descIt;
 
-    const float minDistance = 100;
     std::string result("No match found");
 
     Mat queryDesc;
     std::vector<KeyPoint> queryKey;
+    std::vector<float> distances;
 
     // Safety load the query image
     Mat image = ImageReader::LoadImage(fileName);
@@ -164,23 +166,42 @@ ImageMatcher::FindBestMatch(const std::string &fileName)
     // Match against every image in the set
     for (int i = 0; i < mTrainDescriptors.size(); ++i)
     {
-        cv::Mat H = EstimateHomography(queryDesc, mTrainDescriptors[i],
-                                       queryKey, mTrainKeypoints[i]);
+        cv::Mat H;
 
+        float dist = HomographyMatching(queryDesc, mTrainDescriptors[i],
+                                        queryKey, mTrainKeypoints[i], H);
+
+        distances.push_back(dist);
+
+#ifdef SHOW_WARPED
         // Reload image in the dataset
         Mat trainImage = mImageReader.LoadImage(i);
-
         try
         {
             Mat warped;
             warpPerspective(image, warped, H, trainImage.size());
-
             cv::namedWindow("warped", CV_WINDOW_KEEPRATIO);
             cv::imshow("warped", warped);
             cv::waitKey(0);
         }
         catch (const cv::Exception &ex) {}
+#endif
     }
+
+    std::vector<float>::iterator best =
+        std::min_element (distances.begin(), distances.end());
+
+    if (best != distances.end())
+        result = mFileNames[best - distances.begin()];
+
+    // Compute second best match in order to compare the different algos
+    float real_best = *best;
+    *best = 100;
+    std::vector<float>::iterator second_best =
+        std::min_element (distances.begin(), distances.end());
+
+    float diff = real_best - *second_best;
+    std::cout << "Difference " << diff << std::endl;
 
     return result;
 }

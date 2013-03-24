@@ -11,7 +11,6 @@
 #include "ImageReader.h"
 
 #include <algorithm>
-#include <glog/logging.h>
 #include <boost/filesystem.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -61,7 +60,6 @@ ImageReader::operator() (const std::string &imageDirectory)
         fs::directory_iterator end, it(inputDir);
 
         mFilesPath = it->path().parent_path().string() + "/";
-        LOG(INFO) << "Set image directory to: " << mFilesPath;
 
         for (; it != end; ++it)
         {
@@ -75,8 +73,6 @@ ImageReader::operator() (const std::string &imageDirectory)
                 mFileNames.push_back(it->path().filename().string());
             }
         }
-
-        LOG(INFO) << "Number of images in the directory: " << mFileNames.size();
 
         std::sort(mFileNames.begin(), mFileNames.end());
     }
@@ -98,18 +94,11 @@ ImageReader::LoadAllImages() const
     std::vector<cv::Mat> imageSet;
     typedef std::vector<std::string>::const_iterator fileIt;
 
-    LOG(INFO) << "Loading all image files...";
     for (fileIt it = mFileNames.begin(); it != mFileNames.end(); ++it)
     {
         cv::Mat image = cv::imread(mFilesPath + *it, CV_LOAD_IMAGE_COLOR);
-        if (!image.data)
-        {
-            LOG(ERROR) << "Could not open image " << mFilesPath + *it;
-        }
-        else
-        {
+        if (image.data)
             imageSet.push_back(image);
-        }
     }
 
     return imageSet;
@@ -126,17 +115,11 @@ ImageReader::LoadNextImage()
         throw ImageReaderIOException("No more images to be loaded");
     }
 
-    LOG(INFO) << "Loading image " << mFileNames[mLastImageIndex];
-
     cv::Mat image = cv::imread(mFilesPath + mFileNames[mLastImageIndex],
                                CV_LOAD_IMAGE_COLOR);
 
     if (!image.data)
-    {
-        LOG(ERROR) << "Could not open image "
-        << mFilesPath + mFileNames[mLastImageIndex];
         throw ImageReaderIOException("Could not open image");
-    }
 
     mLastImageIndex++;
     return image;
@@ -148,16 +131,10 @@ ImageReader::LoadImage (unsigned int i)
     if (i >= mFileNames.size())
         throw ImageReaderIOException("Index exceeds number of images");
 
-    LOG(INFO) << "Loading image " << mFileNames[i];
-
     cv::Mat image = cv::imread(mFilesPath + mFileNames[i], CV_LOAD_IMAGE_COLOR);
 
     if (!image.data)
-    {
-        LOG(ERROR) << "Could not open image "
-        << mFilesPath + mFileNames[i];
         throw ImageReaderIOException("Could not open image");
-    }
 
     return image;
 }
