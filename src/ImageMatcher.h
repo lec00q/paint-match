@@ -56,6 +56,10 @@ private:
     ImageReader mImageReader;
 
     cv::FlannBasedMatcher mMatcher;
+<<<<<<< HEAD
+=======
+//    cv::BFMatcher mMatcher;
+>>>>>>> 91d97a6... Confidence is computed as a ratio
 
     std::vector<std::string> mFileNames;
     std::vector<cv::Mat> mTrainDescriptors;
