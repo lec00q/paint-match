@@ -55,9 +55,17 @@ LINK_DIRECTORIES (src)
 
 ADD_SUBDIRECTORY (src)
 
-SET(CPACK_GENERATOR "TBZ2")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Piero Donaggio") #required
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "paintMatcher")
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_NAME "paintMatcher")
+SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-system1.46.1 (>= 1.46.1-1), 
+				  libboost-filesystem1.46.1 (>= 1.46.1-1),
+				  libopencv-core2.3, libopencv-imgproc2.3 (= 2.3.1-7),
+				  libopencv-flann2.3 (= 2.3.1-7),
+				  libopencv-features2d2.3 (= 2.3.1-7),
+				  libopencv-calib3d2.3 (= 2.3.1-7)")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Piero Donaggio")
+SET(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Image matching library")
 SET(CPACK_PACKAGE_VENDOR "Trya Srl")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "1")
