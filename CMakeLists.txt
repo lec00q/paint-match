@@ -12,6 +12,12 @@ IF (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 		 CMakeCache.txt.")
 ENDIF ()
 
+# Build shared lib and set RPATH (Linux only)
+#SET(BUILD_SHARED_LIBS ON)
+#SET(CMAKE_INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib")
+
+SET(BUILD_SHARED_LIBS FALSE)
+
 # SET COMPILER OPTIONS
 IF(CMAKE_COMPILER_IS_GNUCXX)
 
@@ -29,10 +35,6 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # Make sure the compiler can find include files.
 CMAKE_POLICY (SET CMP0015 NEW)
-
-# Build shared lib and set RPATH (Linux only)
-#SET(BUILD_SHARED_LIBS ON)
-#SET(CMAKE_INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib")
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
@@ -58,14 +60,11 @@ ADD_SUBDIRECTORY (src)
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_DEBIAN_PACKAGE_NAME "paintMatcher")
 SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-system1.46.1 (>= 1.46.1-1), 
-				  libboost-filesystem1.46.1 (>= 1.46.1-1),
-				  libopencv-core2.3, libopencv-imgproc2.3 (= 2.3.1-7),
-				  libopencv-flann2.3 (= 2.3.1-7),
-				  libopencv-features2d2.3 (= 2.3.1-7),
-				  libopencv-calib3d2.3 (= 2.3.1-7)")
+SET(CPACK_PACKAGING_INSTALL_PREFIX "/usr/local")
+SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Piero Donaggio")
-SET(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Image matching library")
+SET(CPACK_PACKAGE_CONTACT "Piero Donaggio piero.donaggio@trya.it")
+SET(CPACK_PACKAGE_DESCRIPTIO "Image matching library")
 SET(CPACK_PACKAGE_VENDOR "Trya Srl")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "1")

@@ -10,8 +10,10 @@ FIND_PACKAGE (OpenCV REQUIRED)
 INCLUDE_DIRECTORIES (${OpenCV_INCLUDE_DIRS})
 
 # BOOST
-SET (BOOST_LIBS system filesystem)
-FIND_PACKAGE (Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
+SET (Boost_USE_STATIC_LIBS ON)
+UNSET (Boost_INCLUDE_DIR CACHE)
+UNSET (Boost_LIBRARY_DIRS CACHE)
+FIND_PACKAGE (Boost COMPONENTS system filesystem REQUIRED)
 INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
 
 # GOOGLETEST
@@ -21,6 +23,20 @@ INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
 #    ENABLE_TESTING()
 #ENDIF (GTEST_FOUND)
 
+FIND_PACKAGE (ZLIB REQUIRED)
+INCLUDE_DIRECTORIES (${ZLIB_INCLUDE_DIRS})
+
+FIND_PACKAGE (TIFF)
+INCLUDE_DIRECTORIES (${TIFF_INCLUDE_DIRS})
+
+FIND_PACKAGE (PNG)
+INCLUDE_DIRECTORIES (${PNG_INCLUDE_DIRS})
+
+FIND_PACKAGE (JPEG)
+INCLUDE_DIRECTORIES (${JPEG_INCLUDE_DIRS})
+
+FIND_PACKAGE (Threads REQUIRED)
+
 ######################################
 # CREATE LIBRARIES AND EXECUTABLES
 ######################################
@@ -28,7 +44,19 @@ INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
 SET (SRCS ImageReader.cpp ImageMatcher.cpp)
 
 ADD_EXECUTABLE (paintMatcher main.cpp ${SRCS})
-TARGET_LINK_LIBRARIES (paintMatcher ${OpenCV_LIBS} ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES (paintMatcher
+/usr/local/lib/libopencv_nonfree.a
+/usr/local/lib/libopencv_calib3d.a
+/usr/local/lib/libopencv_flann.a
+/usr/local/lib/libopencv_highgui.a
+/usr/local/lib/libopencv_features2d.a
+/usr/local/lib/libopencv_imgproc.a
+/usr/local/lib/libopencv_core.a
+/usr/local/share/OpenCV/3rdparty/lib/libIlmImf.a
+/usr/local/share/OpenCV/3rdparty/lib/liblibjasper.a
+${TIFF_LIBRARIES} ${JPEG_LIBRARIES}
+${ZLIB_LIBRARIES} ${PNG_LIBRARIES}
+${Boost_LIBRARIES} rt)
 
 #ADD_EXECUTABLE (paintMatcherTest ImageMatcherTest.cc ${SRCS})
 #TARGET_LINK_LIBRARIES (paintMatcherTest ${OpenCV_LIBS} ${Boost_LIBRARIES} ${GTEST_BOTH_LIBRARIES})
