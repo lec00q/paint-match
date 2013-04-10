@@ -46,6 +46,8 @@ main (int argc, char *argv[])
     std::cout << "Best match found: " << matchName << std::endl;
     std::cout << "Confidence: " << confidence << std::endl << std::endl;
 
+    std::cout << "match_result="<< matchName;
+
     return (EXIT_SUCCESS);
 }
 
